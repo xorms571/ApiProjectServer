@@ -56,7 +56,7 @@ app.get('/api/news', async (req, res) => {
 });
 
 app.get('/api/news2', async (req, res) => {
-  const { q, sources, category, language, country, sortBy } = req.query;
+  const { q, sources, category, language, country, sortBy, page=1, pageSize } = req.query;
   try {
     const response = await newsapi.v2.topHeadlines({
       q,
@@ -64,9 +64,11 @@ app.get('/api/news2', async (req, res) => {
       category,
       language,
       country,
-      sortBy
+      sortBy,
+      page,
+      pageSize
     });
-    res.json(response);
+    res.json(response.articles);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch news' });
