@@ -1,6 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
+const NewsAPI = require("newsapi");
+const newsapi = new NewsAPI('92a9bafca35d47c5b3b96217ef7803da');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -52,6 +54,26 @@ app.get('/api/news', async (req, res) => {
       res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+app.get('/api/news2', async (req, res) => {
+  const { q, sources, category, language, country, sortBy } = req.query;
+  try {
+    const response = await newsapi.v2.topHeadlines({
+      q,
+      sources,
+      category,
+      language,
+      country,
+      sortBy
+    });
+    res.json(response);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch news' });
+  }
+});
+
+
 app.listen(PORT, () => {
   console.log(`서버 실행 http://localhost:${PORT}`);
 });
