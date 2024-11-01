@@ -125,41 +125,34 @@ mongoose
   .catch((err) => console.error("MongoDB connection error:", err)); // 연결 실패 시 에러 출력
 
 // 방문자 수 증가
-app.get("/api/visitors", async (req, res) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // 오늘 날짜로 설정
-
+app.get("/api/visitor-count", async (req, res) => {
+  const today = new Date().toISOString().split("T")[0];
   try {
-    // 오늘의 방문자 수를 찾아서 증가시키기
-    let visitor = await Visitor.findOne({ date: today });
-
-    if (!visitor) {
-      // 오늘의 데이터가 없으면 새로 생성
-      visitor = new Visitor({ date: today, count: 1 });
+    // 오늘의 방문자 데이터가 이미 있는지 확인
+    let visitorData = await Visitor.findOne({ date: today });
+    if (visitorData) {
+      // 이미 기록이 있으면 count를 증가
+      visitorData.count += 1;
     } else {
-      // 오늘의 데이터가 있으면 카운트를 증가
-      visitor.count += 1;
+      // 오늘 날짜로 새 기록 추가
+      visitorData = new Visitor({ date: today, count: 1 });
     }
-
-    await visitor.save();
-    res.json({ message: "Visitor count updated", count: visitor.count });
+    await visitorData.save();
+    res.status(200).json({ message: "Visitor count updated successfully" });
   } catch (error) {
-    console.error("Failed to update visitor count:", error);
+    console.error("Error updating visitor count:", error);
     res.status(500).json({ error: "Failed to update visitor count" });
   }
 });
 
-// 특정 날짜의 방문자 수 조회
-app.get("/api/visitor-count", async (req, res) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // 오늘 날짜로 설정
-
+// 누적 방문자 데이터
+app.get("/api/visitor-stats", async (req, res) => {
   try {
-    const visitor = await Visitor.findOne({ date: today });
-    res.json({ count: visitor ? visitor.count : 0 });
+    const visitorStats = await Visitor.find().sort({ date: 1 }); // 날짜 순으로 정렬
+    res.status(200).json(visitorStats);
   } catch (error) {
-    console.error("Failed to fetch visitor count:", error);
-    res.status(500).json({ error: "Failed to fetch visitor count" });
+    console.error("Error fetching visitor stats:", error);
+    res.status(500).json({ error: "Failed to fetch visitor stats" });
   }
 });
 
