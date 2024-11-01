@@ -124,17 +124,14 @@ mongoose
   .then(() => console.log("MongoDB connected")) // 연결 성공 시 메시지 출력
   .catch((err) => console.error("MongoDB connection error:", err)); // 연결 실패 시 에러 출력
 
-// 방문자 수 증가
+// 방문자 수 증가 API (기존 코드 유지)
 app.get("/api/visitor-count", async (req, res) => {
   const today = new Date().toISOString().split("T")[0];
   try {
-    // 오늘의 방문자 데이터가 이미 있는지 확인
     let visitorData = await Visitor.findOne({ date: today });
     if (visitorData) {
-      // 이미 기록이 있으면 count를 증가
       visitorData.count += 1;
     } else {
-      // 오늘 날짜로 새 기록 추가
       visitorData = new Visitor({ date: today, count: 1 });
     }
     await visitorData.save();
@@ -145,14 +142,14 @@ app.get("/api/visitor-count", async (req, res) => {
   }
 });
 
-// 누적 방문자 데이터
+// 방문자 수 기록 조회 API
 app.get("/api/visitor-stats", async (req, res) => {
   try {
-    const visitorStats = await Visitor.find().sort({ date: 1 }); // 날짜 순으로 정렬
+    const visitorStats = await Visitor.find().sort({ date: 1 }); // 날짜순 정렬
     res.status(200).json(visitorStats);
   } catch (error) {
-    console.error("Error fetching visitor stats:", error);
-    res.status(500).json({ error: "Failed to fetch visitor stats" });
+    console.error("Error retrieving visitor stats:", error);
+    res.status(500).json({ error: "Failed to retrieve visitor stats" });
   }
 });
 
